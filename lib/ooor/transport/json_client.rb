@@ -5,14 +5,14 @@ module Ooor
     module JsonClient
       module OeAdapter # NOTE use a middleware here?
 
-        def oe_service(session_info, service, obj, method, *args)
+        def oe_service(session_info, service, obj, method, *args, **kwargs)
           if service == :exec_workflow
             url = '/web/dataset/exec_workflow'
             params = {"model"=>obj, "id"=>args[0], "signal"=>method}
           elsif service == :db || service == :common
             url = '/jsonrpc'
-            params = {"service"=> service, "method"=> method, "args"=> args}
           elsif service == :execute
+            params = {"service"=> service, "method"=> method, "kwargs"=> kwargs, "args"=> args}
             url = '/web/dataset/call_kw'
             if (i = Ooor.irregular_context_position(method)) && args.size < i
               kwargs = {"context"=> args[i]}
@@ -27,10 +27,10 @@ module Ooor
             url = "/web/dataset/#{service}"
             params = args[0].merge({"model"=>obj})
           end # TODO reports for version > 7
-          oe_request(session_info, url, params, method, *args)
+          oe_request(session_info, url, params, method, *args, **kwargs)
         end
 
-        def oe_request(session_info, url, params, method, *args)
+        def oe_request(session_info, url, params, method, *args, **kwargs)
           if session_info[:req_id]
              session_info[:req_id] += 1
           else

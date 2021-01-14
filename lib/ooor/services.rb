@@ -18,10 +18,10 @@ module Ooor
     def self.define_service(service, methods)
       methods.each do |meth|
         self.instance_eval do
-          define_method meth do |*args|
+          define_method meth do |*args, **kwargs|
             if @session.odoo_serie > 7
               json_conn = @session.get_client(:json, "#{@session.base_jsonrpc2_url}")
-              json_conn.oe_service(@session.web_session, service, nil, meth, *args)
+              json_conn.oe_service(@session.web_session, service, nil, meth, *args, **kwargs)
             else # via XMLRPC on v7:
               endpoint = @session.get_client(:xml, "#{@session.base_url}/#{service.to_s.gsub('ooor_alias_', '')}")
               endpoint.call(meth.gsub('ooor_alias_', ''), *args)
@@ -86,7 +86,7 @@ module Ooor
   class ObjectService < Service
     define_service(:object, %w[execute exec_workflow])
 
-    def object_service(service, obj, method, *args)
+    def object_service(service, obj, method, *args, **kwargs)
       @session.login_if_required()
       args = inject_session_context(service, method, *args)
       uid = @session.config[:user_id]
@@ -99,6 +99,9 @@ module Ooor
         json_conn = @session.get_client(:json, "#{@session.base_jsonrpc2_url}")
         json_conn.oe_service(@session.web_session, service, obj, method, *args)
       end
+      @session.logger.debug "OOOR object service: rpc_method: #{service}, db: #{db}, uid: #{uid}, pass: #, obj: #{obj}, method: #{method}, *args: #{args.inspect} **kwargs: #{kwargs.inspect}"
+      json_conn = @session.get_client(:json, "#{@session.base_jsonrpc2_url}")
+      json_conn.oe_service(@session.web_session, service, obj, method, *args, kwargs)
       rescue InvalidSessionError
         @session.config[:force_xml_rpc] = true #TODO set v6 version too
         retry

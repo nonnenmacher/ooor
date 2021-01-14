@@ -46,9 +46,9 @@ module Ooor
         object_service(:exec_workflow, openerp_model, action, *args)
       end
 
-      def object_service(service, obj, method, *args)
+      def object_service(service, obj, method, *args, **kwargs)
         reload_fields_definition(false)
-        cast_answer_to_ruby!(session.object.object_service(service, obj, method, *cast_request_to_openerp(args)))
+        cast_answer_to_ruby!(session.object.object_service(service, obj, method, *cast_request_to_openerp(args),kwargs))
       end
 
       def context
