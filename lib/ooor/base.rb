@@ -26,24 +26,20 @@ module Ooor
       # ******************** remote communication *****************************
 
       #OpenERP search method
-      def search(domain=[], offset=0, limit=false, order=false, context={}, count=false)
-        rpc_execute(:search, to_openerp_domain(domain), offset, limit, order, context, count)
+      def search(domain=[], offset:0, limit:false, order:false, context:{}, count:false)
+        rpc_execute(:search, to_openerp_domain(domain), offset:offset, limit:limit, order:order, context:context, count:count)
       end
 
-      def name_search(name='', domain=[], operator='ilike', limit=100, context={})
-        if session.odoo_serie < 10
-          rpc_execute(:name_search, name, to_openerp_domain(domain), operator, context, limit)
-        else
-          rpc_execute(:name_search, name, to_openerp_domain(domain), operator, limit)
-        end
+      def name_search(name='', domain=[], operator='ilike', limit:100, context:{})
+          rpc_execute(:name_search, name, to_openerp_domain(domain), operator, limit:limit, context: context)
       end
 
-      def rpc_execute(method, *args)
-        object_service(:execute, openerp_model, method, *args)
+      def rpc_execute(method, *args, **kwargs)
+        object_service(:execute, openerp_model, method, *args, kwargs)
       end
 
-      def rpc_exec_workflow(action, *args)
-        object_service(:exec_workflow, openerp_model, action, *args)
+      def rpc_exec_workflow(action, *args, **kwargs)
+        object_service(:exec_workflow, openerp_model, action, *args,kwargs)
       end
 
       def object_service(service, obj, method, *args, **kwargs)
@@ -55,9 +51,9 @@ module Ooor
         session.session_context
       end
 
-      def method_missing(method_symbol, *args)
+      def method_missing(method_symbol, *args, **kwargs)
         raise RuntimeError.new("Invalid RPC method:  #{method_symbol}") if [:type!, :allowed!].index(method_symbol)
-        self.rpc_execute(method_symbol.to_s, *args)
+        self.rpc_execute(method_symbol.to_s, *args, kwargs)
       end
 
       # ******************** AREL Minimal implementation ***********************
@@ -94,25 +90,25 @@ module Ooor
     end
 
     #Generic OpenERP rpc method call
-    def call(method, *args) rpc_execute(method, *args) end
+    def call(method, *args, **kwargs) rpc_execute(method, *args, kwargs) end
 
     #Generic OpenERP on_change method
-    def on_change(on_change_method, field_name, field_value, *args)
+    def on_change(on_change_method, field_name, field_value, *args, **kwargs)
       # NOTE: OpenERP doesn't accept context systematically in on_change events unfortunately
       ids = self.id ? [id] : []
-      result = self.class.object_service(:execute, self.class.openerp_model, on_change_method, ids, *args)
+      result = self.class.object_service(:execute, self.class.openerp_model, on_change_method, ids, *args, kwargs)
       load_on_change_result(result, field_name, field_value)
     end
 
     #wrapper for OpenERP exec_workflow Business Process Management engine
     def wkf_action(action, context={}, reload=true)
-      self.class.object_service(:exec_workflow, self.class.openerp_model, action, self.id, context)
+      self.class.object_service(:exec_workflow, self.class.openerp_model, action, self.id, context: context)
       reload_fields if reload
     end
 
     #Add get_report_data to obtain [report["result"],report["format]] of a concrete openERP Object
     def get_report_data(report_name, report_type="pdf", context={})
-      self.class.get_report_data(report_name, [self.id], report_type, context)
+      self.class.get_report_data(report_name, [self.id], report_type, context: context)
     end
 
     def type() method_missing(:type) end #skips deprecated Object#type method
