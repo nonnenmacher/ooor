@@ -11,14 +11,14 @@ module Ooor
             params = {"model"=>obj, "id"=>args[0], "signal"=>method}
           elsif service == :db || service == :common
             url = '/jsonrpc'
-          elsif service == :execute
             params = {"service"=> service, "method"=> method, "kwargs"=> kwargs, "args"=> args}
+          elsif service == :execute || service == :search_read
             url = '/web/dataset/call_kw'
-            if (i = Ooor.irregular_context_position(method)) && args.size < i
-              kwargs = {"context"=> args[i]}
-            else
-              kwargs = {}
-            end
+            # if (i = Ooor.irregular_context_position(method)) && args.size < i
+            #   kwargs = {"context"=> args[i]}
+            # else
+            #   kwargs = {}
+            # end
             params = {"model"=>obj, "method"=> method, "kwargs"=> kwargs, "args"=>args}#, "context"=>context}
           elsif service.to_s.start_with?("/") # assuming service URL is forced
             url = service
