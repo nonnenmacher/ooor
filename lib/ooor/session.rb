@@ -167,7 +167,7 @@ module Ooor
                                          #domain: search_domain,
                 order: false,
                 context: {})
-        models_records = response["records"]
+        models_records = response
       end
     end
 

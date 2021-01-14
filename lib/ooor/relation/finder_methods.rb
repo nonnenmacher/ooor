@@ -127,7 +127,7 @@ module Ooor
                 order: options[:order] || false,
                 context: context
               })
-            records = response["records"]
+            records = response
           end
           return true, records
         end
