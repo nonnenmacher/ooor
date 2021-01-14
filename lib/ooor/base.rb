@@ -84,9 +84,10 @@ module Ooor
 
     include Persistence, Callbacks, ActiveModel::Dirty
 
-    def rpc_execute(method, *args)
-      args += [self.class.context] unless args[-1].is_a? Hash
-      self.class.object_service(:execute, self.class.openerp_model, method, *args)
+    def rpc_execute(method, *args, **kwargs)
+      # [TODO][VN] check to see if we need to add a context kwargs !
+      #args += [self.class.context] unless args[-1].is_a? Hash
+      self.class.object_service(:execute, self.class.openerp_model, method, *args, kwargs)
     end
 
     #Generic OpenERP rpc method call
