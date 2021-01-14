@@ -124,7 +124,7 @@ module Ooor
     def lazy_load(meth, *args)
       @lazy = false
       fields = (self.class.fast_fields + [meth]).uniq
-      load(rpc_execute('read', [@attributes["id"]], fields, *args || context)[0]).tap do
+      load(rpc_execute('read', [@attributes["id"]], fields, *args, context:context)[0]).tap do
         @lazy = false
       end
     end
@@ -134,7 +134,7 @@ module Ooor
       if @attributes.has_key?(meth)
         @attributes[meth]
       elsif @attributes["id"] # if field is computed for instance
-        @attributes[meth] = rpc_execute('read', [@attributes["id"]], [meth], *args || context)[0][meth]
+        @attributes[meth] = rpc_execute('read', [@attributes["id"]], [meth], *args, context: context)[0][meth]
       else
         nil
       end
@@ -156,7 +156,7 @@ module Ooor
         @loaded_associations[meth] = relationnal_result(meth, *args)
       else
         if @attributes["id"]
-          @associations[meth] = rpc_execute('read', [@attributes["id"]], [meth], *args || context)[0][meth]
+          @associations[meth] = rpc_execute('read', [@attributes["id"]], [meth], *args, context: context)[0][meth]
           @loaded_associations[meth] = relationnal_result(meth, *args)
         elsif self.class.one2many_associations.has_key?(meth) || self.class.many2many_associations.has_key?(meth)
           load_x2m_association(meth, [], *args)

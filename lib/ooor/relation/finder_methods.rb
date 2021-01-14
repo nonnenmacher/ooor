@@ -107,7 +107,7 @@ module Ooor
             is_collection = false
           end
           scope.map! { |item| item_to_id(item, context) }.reject! {|item| !item}
-          records = rpc_execute('read', scope, fields, context.dup)
+          records = rpc_execute('read', scope, fields, context: context.dup)
           records.sort_by! {|r| scope.index(r["id"])} if @session.config[:force_xml_rpc]
           return is_collection, records
         end

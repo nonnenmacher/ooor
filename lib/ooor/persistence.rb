@@ -154,7 +154,7 @@ module Ooor
     # callbacks or any <tt>:dependent</tt> association
     # options, use <tt>#destroy</tt>.
     def delete
-      rpc_execute('unlink', [id], context) if persisted?
+      rpc_execute('unlink', [id], context: context) if persisted?
       @destroyed = true
       freeze
     end
@@ -168,7 +168,7 @@ module Ooor
     # ActiveRecord::Callbacks for further details.
     def destroy
       run_callbacks :destroy do
-        rpc_execute('unlink', [id], context)
+        rpc_execute('unlink', [id], context: context)
         @destroyed = true
         freeze 
       end
@@ -223,7 +223,7 @@ module Ooor
 
     #OpenERP copy method, load persisted copied Object
     def copy(defaults={}, context={})
-      self.class.find(rpc_execute('copy', id, defaults, context), context: context)
+      self.class.find(rpc_execute('copy', id, defaults, context: context), context: context)
     end
 
     # Runs all the validations within the specified context. Returns +true+ if
@@ -268,7 +268,7 @@ module Ooor
 
     def update_record(options)
       run_callbacks :update do
-        rpc_execute('write', [self.id], to_openerp_hash, context)
+        rpc_execute('write', [self.id], to_openerp_hash, context: context)
         reload_fields if should_reload?(options)
         @persisted = true
       end
@@ -276,7 +276,7 @@ module Ooor
 
     def create_record(options={})
       run_callbacks :create do
-        self.id = rpc_execute('create', to_openerp_hash, context)
+        self.id = rpc_execute('create', to_openerp_hash, context: context)
         if @ir_model_data_id
           IrModelData.create(model: self.class.openerp_model,
             'module' => @ir_model_data_id[0],
@@ -313,7 +313,7 @@ module Ooor
     end
 
     def load_with_defaults(attributes, default_get_list)
-      defaults = rpc_execute("default_get", default_get_list || self.class.fields.keys + self.class.associations_keys, context)
+      defaults = rpc_execute("default_get", default_get_list || self.class.fields.keys + self.class.associations_keys, context: context)
       self.class.associations_keys.each do |k|
         # m2m with existing records:
         if defaults[k].is_a?(Array) && defaults[k][0].is_a?(Array) && defaults[k][0][2].is_a?(Array)
