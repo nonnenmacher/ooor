@@ -88,17 +88,9 @@ module Ooor
 
     def object_service(service, obj, method, *args, **kwargs)
       @session.login_if_required()
-      args = inject_session_context(service, method, *args)
+      # args = inject_session_context(service, method, *args)
       uid = @session.config[:user_id]
       db = @session.config[:database]
-      @session.logger.debug "OOOR object service: rpc_method: #{service}, db: #{db}, uid: #{uid}, pass: #, obj: #{obj}, method: #{method}, *args: #{args.inspect}"
-      if @session.config[:force_xml_rpc]
-        pass = @session.config[:password]
-        send(service, db, uid, pass, obj, method, *args)
-      else
-        json_conn = @session.get_client(:json, "#{@session.base_jsonrpc2_url}")
-        json_conn.oe_service(@session.web_session, service, obj, method, *args)
-      end
       @session.logger.debug "OOOR object service: rpc_method: #{service}, db: #{db}, uid: #{uid}, pass: #, obj: #{obj}, method: #{method}, *args: #{args.inspect} **kwargs: #{kwargs.inspect}"
       json_conn = @session.get_client(:json, "#{@session.base_jsonrpc2_url}")
       json_conn.oe_service(@session.web_session, service, obj, method, *args, kwargs)
