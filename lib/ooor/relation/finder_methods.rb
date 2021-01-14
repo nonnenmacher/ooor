@@ -115,16 +115,16 @@ module Ooor
         def read_domain(context, fields, options)
           if @session.config[:force_xml_rpc]
             domain = to_openerp_domain(options[:domain] || options[:conditions] || [])
-            ids = rpc_execute('search', domain, options[:offset] || 0, options[:limit] || false,  options[:order] || false, context.dup)
-            records = rpc_execute('read', ids, fields, context.dup)
+            ids = rpc_execute('search', domain, offset: options[:offset] || 0, limit: options[:limit] || false,  order: options[:order] || false, context: context.dup)
+            records = rpc_execute('read', ids, fields, context: context.dup)
           else
             domain = to_openerp_domain(options[:domain] || options[:conditions] || [])
-            response = object_service(:search_read, openerp_model, 'search_read', {
+            response = object_service(:search_read, openerp_model, 'search_read', domain, {
                 fields: fields,
                 offset: options[:offset] || 0,
                 limit: options[:limit] || false,
-                domain: domain,
-                sort: options[:order] || false,
+                #domain: domain, # passed in *args list
+                order: options[:order] || false,
                 context: context
               })
             records = response["records"]
